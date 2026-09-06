@@ -1,10 +1,10 @@
 {
   "game_uuid": "test-uuid-0001",
   "players": [
-    {"seat": 0, "name": "Alice", "rank": "四段"},
-    {"seat": 1, "name": "Bob", "rank": "三段"},
-    {"seat": 2, "name": "Carol", "rank": "三段"},
-    {"seat": 3, "name": "Dave", "rank": "二段"}
+    {"seat": 0, "name": "Alice", "rank": "四段", "account_id": 111111111},
+    {"seat": 1, "name": "Bob", "rank": "三段", "account_id": 222222222},
+    {"seat": 2, "name": "Carol", "rank": "三段", "account_id": 333333333},
+    {"seat": 3, "name": "Dave", "rank": "二段", "account_id": 444444444}
   ],
   "rounds": [
     {

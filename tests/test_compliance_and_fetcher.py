@@ -113,18 +113,18 @@ def test_local_file_record_fetcher_reads_json(tmp_path: Path):
     record_path = tmp_path / "abc-123.json"
     record_path.write_text(json.dumps({"game_uuid": "abc-123", "players": [], "rounds": []}), encoding="utf-8")
     fetcher = LocalFileRecordFetcher(tmp_path)
-    raw = fetcher.fetch(PaipuRef(game_uuid="abc-123", focus_seat=None))
+    raw = fetcher.fetch(PaipuRef(game_uuid="abc-123", viewer_account_id=None))
     assert raw["game_uuid"] == "abc-123"
 
 
 def test_local_file_record_fetcher_missing_file_raises(tmp_path: Path):
     fetcher = LocalFileRecordFetcher(tmp_path)
     with pytest.raises(RecordFetchError):
-        fetcher.fetch(PaipuRef(game_uuid="missing", focus_seat=None))
+        fetcher.fetch(PaipuRef(game_uuid="missing", viewer_account_id=None))
 
 
 def test_live_fetcher_is_not_implemented():
     creds = Credentials(username="alice", password="pw")
     fetcher = LiveMahjongSoulRecordFetcher(creds)
     with pytest.raises(NotImplementedError):
-        fetcher.fetch(PaipuRef(game_uuid="abc-123", focus_seat=None))
+        fetcher.fetch(PaipuRef(game_uuid="abc-123", viewer_account_id=None))

@@ -71,18 +71,25 @@ flowchart LR
 
 ### 3.1 `url_parser`（URL解析）
 
-- 入力例: `https://game.mahjongsoul.com/?paipu=YYMMDD-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx_a<seat>`
+- 入力例: `https://game.mahjongsoul.com/?paipu=YYMMDD-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx_a<account_id>`
   のような、雀魂の対局結果画面「牌譜を見る」から得られる共有URL。
 - 責務:
   - クエリパラメータ `paipu` から **対局ID（UUID相当）** を抽出。
-  - `_a<N>` サフィックスなどから**閲覧対象の席（観戦視点）**を抽出（無指定時は全員分を解析対象にできるようにする）。
+  - `_a<N>` サフィックスから**観戦者のアカウントID**を抽出する。
+    実データで検証した結果、このサフィックスは席番号(0-3)ではなく、雀魂内部の
+    **アカウントIDそのもの**（例: `_a430980121`）であることが判明した。そのため
+    URL単体からは席番号を直接特定できず、牌譜データ本体に含まれる各プレイヤーの
+    `account_id` と突き合わせて初めて席番号(0-3)が分かる（`resolve_focus_seat` 参照）。
   - フォーマット不正時は明示的なエラー（`InvalidPaipuUrlError`）を返す。
 
 ```python
 @dataclass(frozen=True)
 class PaipuRef:
     game_uuid: str
-    focus_seat: int | None  # None の場合は指定なし（全員分を解析）
+    viewer_account_id: int | None  # None の場合は指定なし
+
+def resolve_focus_seat(ref: PaipuRef, record: GameRecord) -> int | None:
+    """record.players の account_id と突き合わせて席番号(0-3)を解決する。"""
 ```
 
 ### 3.2 `record_fetcher`（牌譜取得・Compliance Layer）

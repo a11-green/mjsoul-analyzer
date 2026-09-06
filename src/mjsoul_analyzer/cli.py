@@ -17,7 +17,12 @@ from mjsoul_analyzer.report.report_generator import (
     write_json_report,
     write_markdown_report,
 )
-from mjsoul_analyzer.url_parser import InvalidPaipuUrlError, parse_paipu_url, parse_paipu_value
+from mjsoul_analyzer.url_parser import (
+    InvalidPaipuUrlError,
+    parse_paipu_url,
+    parse_paipu_value,
+    resolve_focus_seat,
+)
 
 _ACK_MARKER_PATH = Path.home() / ".mjsoul-analyzer" / "tos_ack"
 
@@ -98,13 +103,6 @@ def analyze(
     except InvalidPaipuUrlError as exc:
         raise click.ClickException(str(exc)) from exc
 
-    target_seat = seat if seat is not None else ref.focus_seat
-    if target_seat is None:
-        raise click.ClickException(
-            "解析対象の席番号を特定できません。--seat を指定するか、"
-            "視点指定付きの牌譜URL/ID(例: ..._a0)を使用してください。"
-        )
-
     fetcher = LocalFileRecordFetcher(records_dir)
     try:
         raw = fetcher.fetch(ref)
@@ -119,6 +117,15 @@ def analyze(
         record = parse_raw_game_record(raw)
     except InvalidRecordError as exc:
         raise click.ClickException(str(exc)) from exc
+
+    # URLの "_a<account_id>" は席番号(0-3)そのものではなく観戦者のアカウントIDなので、
+    # 牌譜内のプレイヤー一覧と突き合わせて席番号に解決する。
+    target_seat = seat if seat is not None else resolve_focus_seat(ref, record)
+    if target_seat is None:
+        raise click.ClickException(
+            "解析対象の席番号を特定できません。--seat を指定するか、"
+            "牌譜内のプレイヤーと一致するアカウントID付きの牌譜URL/ID(例: ..._a12345678)を使用してください。"
+        )
 
     decisions = reconstruct_decision_points(record, focus_seats={target_seat})
     if not decisions:

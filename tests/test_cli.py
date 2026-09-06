@@ -24,7 +24,7 @@ def test_analyze_end_to_end(tmp_path: Path, monkeypatch):
         main,
         [
             "analyze",
-            "test-uuid-0001_a0",
+            "test-uuid-0001_a111111111",
             "--records-dir",
             str(records_dir),
             "--out",
@@ -85,7 +85,7 @@ def test_tos_prompt_declined_aborts(tmp_path: Path, monkeypatch):
     runner = CliRunner()
     result = runner.invoke(
         main,
-        ["analyze", "test-uuid-0001_a0", "--records-dir", str(records_dir)],
+        ["analyze", "test-uuid-0001_a111111111", "--records-dir", str(records_dir)],
         input="n\n",
     )
     assert result.exit_code != 0

@@ -5,7 +5,7 @@ RawGameRecordのスキーマ:
 ```json
 {
   "game_uuid": "230101-90a2bcde-1234-5678-9abc-def012345678",
-  "players": [{"seat": 0, "name": "Alice", "rank": "..."}, ...],
+  "players": [{"seat": 0, "name": "Alice", "rank": "...", "account_id": 430980121}, ...],
   "rounds": [
     {
       "round_name": "East-1-0",
@@ -65,7 +65,12 @@ def parse_raw_game_record(raw: dict[str, Any]) -> GameRecord:
         raise InvalidRecordError(f"必須フィールドが不足しています: {exc}") from exc
 
     players = [
-        PlayerInfo(seat=p["seat"], name=p.get("name", ""), rank=p.get("rank", ""))
+        PlayerInfo(
+            seat=p["seat"],
+            name=p.get("name", ""),
+            rank=p.get("rank", ""),
+            account_id=p.get("account_id"),
+        )
         for p in players_raw
     ]
     rounds = [_parse_round(r) for r in rounds_raw]

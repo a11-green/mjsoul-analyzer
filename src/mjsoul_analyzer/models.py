@@ -110,6 +110,7 @@ class PlayerInfo:
     seat: int
     name: str = ""
     rank: str = ""
+    account_id: Optional[int] = None  # 牌譜URLの "_a<account_id>" と突き合わせる際に使用
 
 
 @dataclass
