@@ -1,0 +1,1 @@
+# mjsoul-analyzer
