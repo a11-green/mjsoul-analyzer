@@ -4,3 +4,30 @@
 
 - 設計書: [`docs/DESIGN.md`](./docs/DESIGN.md)
 - 開発ルール・雀魂利用規約の遵守事項: [`CLAUDE.md`](./CLAUDE.md)
+
+## 現在の実装状況(v1 MVP)
+
+牌効率(シャンテン数・受け入れ枚数)ベースの最適手判定、実際の打牌との差分ラベリング、
+統計集計、Markdown/JSONレポート出力までを実装済み。**雀魂サーバーへの直接通信(牌譜取得)は
+未実装**であり、事前に取得済みの牌譜データ(`RawGameRecord` JSON、`docs/DESIGN.md` 参照)を
+ローカルディレクトリに配置して解析する形になっている(理由は `docs/DESIGN.md` 3.2節、
+`src/mjsoul_analyzer/fetcher/record_fetcher.py` を参照)。
+
+## セットアップ
+
+```bash
+pip install -e ".[dev]"
+pytest
+```
+
+## 使い方
+
+`cache/<対局ID>.json` に `RawGameRecord` 形式の牌譜データを配置した上で:
+
+```bash
+mjsoul-analyzer analyze "https://game.mahjongsoul.com/?paipu=<対局ID>_a0" \
+    --records-dir cache --out reports
+```
+
+初回実行時は [CLAUDE.md](./CLAUDE.md) の利用規約遵守方針への同意プロンプトが表示される
+(`--yes` でスキップ可能)。`reports/` にMarkdown/JSONレポートが出力される。

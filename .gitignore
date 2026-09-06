@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+.venv/
+venv/
+
+# ローカル設定・認証情報（雀魂利用規約遵守: 認証情報は絶対にコミットしない）
+config.yaml
+config.local.yaml
+.env
+*.credentials.json
+
+# 取得済み牌譜キャッシュ（他者牌譜の再配布防止・サーバー負荷軽減のためコミットしない）
+cache/
+
+# 出力レポート（個人の対局データを含みうるため既定では追跡しない）
+reports/
