@@ -19,7 +19,8 @@ RawGameRecordのスキーマ:
         {"type": "pon", "seat": 2, "tiles": ["7z", "7z", "7z"], "called_tile": "7z", "from_seat": 1},
         {"type": "kan_open", "seat": 2, "tiles": [...4枚...], "called_tile": "...", "from_seat": 1},
         {"type": "kan_closed", "seat": 0, "tiles": [...4枚...]},
-        {"type": "kan_added", "seat": 2, "tile": "..."}
+        {"type": "kan_added", "seat": 2, "tile": "..."},
+        {"type": "kita", "seat": 0}  # 三人打ち専用: 北抜き
       ],
       "result": {
         "kind": "hora",
@@ -112,6 +113,10 @@ def _parse_event(raw_event: dict[str, Any]) -> Action:
 
     if event_type == "riichi":
         return Action(seat=seat, kind="riichi")
+
+    if event_type == "kita":
+        # 三人打ちの北抜き。手牌から北(4z)を1枚除くだけで、面子・捨て牌としては扱わない。
+        return Action(seat=seat, kind="kita", tile=Tile.parse("4z"))
 
     if event_type in ("chi", "pon", "kan_open"):
         tiles = [Tile.parse(t) for t in raw_event["tiles"]]

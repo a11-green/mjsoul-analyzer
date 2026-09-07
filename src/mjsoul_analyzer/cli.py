@@ -1,6 +1,7 @@
 """CLIエントリポイント(docs/DESIGN.md 3.9節)。"""
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import click
@@ -9,6 +10,7 @@ from mjsoul_analyzer.aggregator import aggregate
 from mjsoul_analyzer.engine.efficiency_engine import rank_moves
 from mjsoul_analyzer.engine.hand_state import reconstruct_decision_points
 from mjsoul_analyzer.engine.move_evaluator import EvaluatorConfig, evaluate
+from mjsoul_analyzer.fetcher.capture_decoder import CaptureDecodeError, capture_to_raw_game_record
 from mjsoul_analyzer.fetcher.record_fetcher import LocalFileRecordFetcher, RecordFetchError
 from mjsoul_analyzer.parser.record_parser import InvalidRecordError, parse_raw_game_record
 from mjsoul_analyzer.report.report_generator import (
@@ -155,6 +157,43 @@ def analyze(
     click.echo(
         f"最適手一致率: {stats.optimal_rate:.1%} "
         f"({stats.label_counts['OPTIMAL']}/{stats.total_decisions})"
+    )
+
+
+@main.command("decode-capture")
+@click.argument("capture_path", type=click.Path(path_type=Path, exists=True))
+@click.option(
+    "--records-dir",
+    type=click.Path(path_type=Path),
+    default=Path("cache"),
+    show_default=True,
+    help="変換後のRawGameRecord(JSON)を書き出すディレクトリ(analyzeコマンドの--records-dirと合わせる)。",
+)
+def decode_capture(capture_path: Path, records_dir: Path) -> None:
+    """browser-extension/でキャプチャしたWebSocket生データJSONを、
+    analyzeコマンドが読めるRawGameRecord形式に変換して保存する。
+
+    通信は一切行わない(既にローカルにあるキャプチャ済みJSONを変換するのみ)。
+    """
+    try:
+        capture = json.loads(capture_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise click.ClickException(f"キャプチャJSONの読み込みに失敗しました: {exc}") from exc
+
+    try:
+        raw = capture_to_raw_game_record(capture)
+    except CaptureDecodeError as exc:
+        raise click.ClickException(str(exc)) from exc
+
+    records_dir.mkdir(parents=True, exist_ok=True)
+    out_path = records_dir / f"{raw['game_uuid']}.json"
+    out_path.write_text(json.dumps(raw, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    click.echo(f"RawGameRecordを出力しました: {out_path}")
+    click.echo(f"局数: {len(raw['rounds'])} / プレイヤー: {[p['name'] for p in raw['players']]}")
+    click.echo(
+        f"\n引き続き解析するには: mjsoul-analyzer analyze {raw['game_uuid']} "
+        f"--records-dir {records_dir}"
     )
 
 

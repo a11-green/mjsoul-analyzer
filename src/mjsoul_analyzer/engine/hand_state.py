@@ -13,8 +13,14 @@ from __future__ import annotations
 
 from mjsoul_analyzer.models import Action, DecisionPoint, GameRecord, Meld, RoundRecord, Tile
 
-# 4人打ち: 136枚 - 王牌14枚 - 配牌13枚*4 = 70枚
-_INITIAL_LIVE_WALL = 70
+# 4人打ち: 136枚-王牌14枚-配牌13枚*4=70枚。三人打ち: 108枚-王牌14枚-配牌13枚*3=55枚。
+_DEAD_WALL = 14
+_TOTAL_TILES_BY_SEAT_COUNT = {3: 108, 4: 136}
+
+
+def _initial_live_wall(num_seats: int, dealt_tiles: int) -> int:
+    total_tiles = _TOTAL_TILES_BY_SEAT_COUNT.get(num_seats, 136)
+    return total_tiles - _DEAD_WALL - dealt_tiles
 
 
 def reconstruct_decision_points(
@@ -61,7 +67,8 @@ def _reconstruct_round(
     melds: dict[int, list[Meld]] = {seat: [] for seat in hands}
     discards: dict[int, list[Tile]] = {seat: [] for seat in hands}
     riichi_seats: set[int] = set()
-    remaining_tiles = _INITIAL_LIVE_WALL
+    dealt_tiles = sum(len(tiles) for tiles in hands.values())
+    remaining_tiles = _initial_live_wall(len(hands), dealt_tiles)
     turn_counters: dict[int, int] = {seat: 0 for seat in hands}
     decision_points: list[DecisionPoint] = []
 
@@ -133,6 +140,12 @@ def _handle_event(
         assert event.meld is not None
         _apply_meld_to_hand(hands[seat], event.meld)
         melds[seat].append(event.meld)
+        return
+
+    if event.kind == "kita":
+        # 三人打ちの北抜き: 手牌から北を1枚除くのみ(面子にも捨て牌にもならない)。
+        assert event.tile is not None
+        _remove_tile(hands[seat], event.tile)
         return
 
     if event.kind == "kan":

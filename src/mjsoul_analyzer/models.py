@@ -99,7 +99,7 @@ class Action:
     """
 
     seat: int
-    kind: Literal["draw", "discard", "chi", "pon", "kan", "riichi"]
+    kind: Literal["draw", "discard", "chi", "pon", "kan", "riichi", "kita"]  # kitaは三人打ちの北抜きのみ
     tile: Optional[Tile] = None
     meld: Optional[Meld] = None
     is_tsumogiri: bool = False
