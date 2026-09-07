@@ -25,9 +25,21 @@ pytest
 `cache/<対局ID>.json` に `RawGameRecord` 形式の牌譜データを配置した上で:
 
 ```bash
-mjsoul-analyzer analyze "https://game.mahjongsoul.com/?paipu=<対局ID>_a0" \
+mjsoul-analyzer analyze "https://game.mahjongsoul.com/?paipu=<対局ID>_a<アカウントID>" \
     --records-dir cache --out reports
 ```
 
+URL末尾の `_a<N>` は席番号(0-3)ではなく雀魂の**アカウントID**であり、牌譜内のプレイヤー
+情報と突き合わせて席を解決する。アカウントIDでの自動解決がうまくいかない場合は
+`--seat 0-3` で明示的に指定できる。
+
 初回実行時は [CLAUDE.md](./CLAUDE.md) の利用規約遵守方針への同意プロンプトが表示される
 (`--yes` でスキップ可能)。`reports/` にMarkdown/JSONレポートが出力される。
+
+### 牌譜データ(RawGameRecord)の入手
+
+雀魂サーバーへの直接通信は未実装のため、`RawGameRecord` JSON は別途用意する必要がある。
+[`browser-extension/`](./browser-extension/) に、雀魂ブラウザ版の牌譜(リプレイ)画面を
+開いている間だけ手動でWebSocket通信をキャプチャできる補助用Chrome拡張(非公式・個人利用専用)
+を用意している。ただし出力は生データ(未デコード)であり、`RawGameRecord` への変換は今後の課題。
+詳細は拡張機能の README を参照。

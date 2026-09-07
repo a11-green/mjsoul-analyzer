@@ -112,6 +112,23 @@ class RecordFetcher(Protocol):
     def fetch(self, ref: PaipuRef) -> RawGameRecord: ...
 ```
 
+#### 3.2.1 ブラウザ拡張による牌譜キャプチャ(補助手段)
+
+`LiveMahjongSoulRecordFetcher` の実装(サーバーとの直接通信)は、本開発環境では
+プロトコルを検証できないため未実装のままとしている。その代替・補助として、
+[`browser-extension/`](../browser-extension/) に、雀魂ブラウザ版の**牌譜(リプレイ)画面**を
+開いている間だけユーザーが手動でWebSocket通信をキャプチャしJSON化できるChrome拡張を
+用意している。設計上の要点:
+
+- URLに `paipu=` を含む牌譜(リプレイ)画面以外では起動できない(対局中の使用を拡張機能側で禁止する)。
+- 記録は常にユーザーの手動操作(開始/停止ボタン)によってのみ行われ、自動連続取得は行わない。
+- 出力は生のWebSocketフレーム(base64)であり、`RawGameRecord` へのデコードは別途必要
+  (雀魂の内部メッセージ仕様が非公開かつ本環境で検証不能なため、未検証のデコーダを
+  そのまま組み込むリスクを避けている)。実際のキャプチャデータを見ながら、
+  段階的にデコーダを検証・実装していく想定。
+
+詳細は [`browser-extension/README.md`](../browser-extension/README.md) を参照。
+
 ### 3.3 `record_parser`（牌譜パース）
 
 - 責務: 取得した raw protobuf データを、解析しやすい内部データモデル `GameRecord` にデコードする。
