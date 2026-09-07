@@ -6,9 +6,11 @@
 <style>
   body { width: 320px; font-family: sans-serif; font-size: 13px; padding: 10px; }
   h1 { font-size: 14px; margin: 0 0 8px; }
-  #status { margin-bottom: 8px; white-space: pre-wrap; line-height: 1.5; }
+  #status { margin-bottom: 8px; white-space: pre-wrap; line-height: 1.5; font-family: monospace; font-size: 11px; }
   button { margin-right: 4px; margin-bottom: 4px; }
   .warn { color: #a33; font-size: 11px; margin-top: 8px; line-height: 1.4; }
+  .override { margin-top: 8px; padding-top: 8px; border-top: 1px solid #ccc; }
+  .override label { font-size: 11px; }
 </style>
 </head>
 <body>
@@ -22,6 +24,16 @@
     対局終了後の牌譜(リプレイ、URLに paipu= を含む画面)でのみ動作します。
     対局中の使用・自動連続キャプチャは想定していません。取得したJSONは自分自身の
     振り返り目的以外に使用しないでください。
+  </div>
+  <div class="override">
+    <label>
+      <input type="checkbox" id="forceOverride">
+      自動判定に失敗する場合、今このページは牌譜(リプレイ)画面であると自分で確認した上でキャプチャを許可する
+    </label>
+    <div class="warn">
+      チェックを入れる前に、必ず自分の目でこの画面が対局終了後のリプレイ画面であることを確認してください。
+      対局中の画面では絶対にチェックしないでください。
+    </div>
   </div>
   <script src="popup.js"></script>
 </body>

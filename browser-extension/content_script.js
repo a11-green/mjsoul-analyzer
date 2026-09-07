@@ -36,7 +36,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       return false;
 
     case "MJSOUL_CAPTURE_START":
-      if (!isReplayUrl()) {
+      if (!isReplayUrl() && !message.force) {
         sendResponse({ ok: false, error: "牌譜(paipu=)を含むリプレイ画面でのみ開始できます。" });
         return false;
       }

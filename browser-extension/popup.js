@@ -3,6 +3,7 @@ const startBtn = document.getElementById("start");
 const stopBtn = document.getElementById("stop");
 const clearBtn = document.getElementById("clear");
 const exportBtn = document.getElementById("export");
+const forceOverrideEl = document.getElementById("forceOverride");
 
 function getActiveTab() {
   return new Promise((resolve) => {
@@ -38,16 +39,23 @@ async function refreshStatus() {
     res.isReplayUrl ? "牌譜(リプレイ)画面: OK" : "牌譜(リプレイ)画面ではありません(paipu=を含むURLが必要)",
     res.recording ? "状態: キャプチャ中" : "状態: 停止中",
     `captured: ${res.frameCount} フレーム`,
+    `[debug] 検出URL: ${res.url}`,
   ];
   statusEl.textContent = lines.join("\n");
-  startBtn.disabled = res.recording || !res.isReplayUrl;
+  const canStart = res.isReplayUrl || forceOverrideEl.checked;
+  startBtn.disabled = res.recording || !canStart;
   stopBtn.disabled = !res.recording;
   exportBtn.disabled = res.frameCount === 0;
 }
 
+forceOverrideEl.addEventListener("change", refreshStatus);
+
 startBtn.addEventListener("click", async () => {
   const tab = await getActiveTab();
-  const res = await sendToContentScript(tab.id, { type: "MJSOUL_CAPTURE_START" });
+  const res = await sendToContentScript(tab.id, {
+    type: "MJSOUL_CAPTURE_START",
+    force: forceOverrideEl.checked,
+  });
   if (res && res.ok === false) alert(res.error);
   refreshStatus();
 });
