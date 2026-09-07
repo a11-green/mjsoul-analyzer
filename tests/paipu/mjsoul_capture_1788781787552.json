@@ -1,0 +1,21 @@
+{
+  "captured_at": "2026-09-07T11:49:47.551Z",
+  "source_url": "https://game.mahjongsoul.com/",
+  "frame_count": 2,
+  "frames": [
+    {
+      "direction": "send",
+      "url": "wss://jpgs.mahjongsoul.com/gateway",
+      "at": 1788781778282,
+      "encoding": "base64",
+      "data": "AikAChMubHEuUm91dGUuaGVhcnRiZWF0EggIABAAGAsgBA=="
+    },
+    {
+      "direction": "recv",
+      "url": "wss://jpgs.mahjongsoul.com:443/gateway",
+      "at": 1788781778309,
+      "encoding": "base64",
+      "data": "AykACgASAA=="
+    }
+  ]
+}
