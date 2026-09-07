@@ -1,0 +1,35 @@
+{
+  "captured_at": "2026-09-07T12:21:23.498Z",
+  "source_url": "https://game.mahjongsoul.com/?paipu=260907-f2e1581b-212e-42fd-b2ed-ff06b4037517_a430980121",
+  "frame_count": 4,
+  "frames": [
+    {
+      "direction": "send",
+      "url": "wss://jpgs.mahjongsoul.com/gateway",
+      "at": 1788783672411,
+      "encoding": "base64",
+      "data": "AiEAChMubHEuUm91dGUuaGVhcnRiZWF0EggIERAAGAsgDQ=="
+    },
+    {
+      "direction": "recv",
+      "url": "wss://jpgs.mahjongsoul.com:443/gateway",
+      "at": 1788783672427,
+      "encoding": "base64",
+      "data": "AyEACgASAA=="
+    },
+    {
+      "direction": "send",
+      "url": "wss://jpgsbk.mahjongsoul.com/gateway",
+      "at": 1788783675394,
+      "encoding": "base64",
+      "data": "AiIAChMubHEuUm91dGUuaGVhcnRiZWF0EggIABAAGAsgAQ=="
+    },
+    {
+      "direction": "recv",
+      "url": "wss://jpgsbk.mahjongsoul.com:443/gateway",
+      "at": 1788783675405,
+      "encoding": "base64",
+      "data": "AyIACgASAA=="
+    }
+  ]
+}
