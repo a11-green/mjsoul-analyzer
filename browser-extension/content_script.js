@@ -17,42 +17,62 @@
 
 let bestKnownUrl = location.href;
 let frames = [];
-let recording = false;
-let autoStarted = false; // ユーザー操作なしで自動的に記録を開始したか
+// 【重要】実際の検証で、牌譜画面かどうかの確認(background.jsへの問い合わせ)が
+// 返ってくるより前に、ログイン・牌譜データ取得の通信が完了してしまうことが判明した
+// (idx=33〜34時点で既にheartbeatしか残っていなかった)。そのため「確認できてから
+// 記録開始」ではなく、「ページ読み込みと同時に無条件で暫定記録を開始し、後から
+// 牌譜画面でないと判明したら即座に破棄する」方式に変更した。
+// これにより対局中ページでも一瞬(background.jsからの応答が返るまでの間、通常は
+// 数ミリ秒)だけ暫定的にバッファされる可能性はあるが、
+//   - 牌譜画面でないと確認され次第フレームは即座に破棄され、
+//   - MJSOUL_CAPTURE_EXPORT は isReplayUrl() が真、またはユーザーが明示的に
+//     Start(オーバーライド)を押した場合以外は拒否する
+// ため、対局中データが外部に出力されることはない(CLAUDE.mdの「対局中には
+// 絶対に発動しない」制約を、確認前バッファ+確認後破棄+エクスポート時ガードの
+// 三重の仕組みで担保している)。
+let recording = true;
+let autoStarted = true; // 「牌譜画面である」と確定するまでの暫定記録中フラグ
 let userConfirmed = false; // ユーザーが明示的にStart(手動オーバーライド含む)を押したか
 
 function isReplayUrl() {
   return bestKnownUrl.includes("paipu=");
 }
 
+function confirmRecording() {
+  autoStarted = false; // 牌譜画面と確定したので暫定状態を解除(以後は破棄対象にしない)
+}
+
+function discardRecording() {
+  recording = false;
+  frames = [];
+  autoStarted = false;
+}
+
 function startRecording({ auto }) {
   recording = true;
   if (auto) {
-    autoStarted = true;
+    confirmRecording();
   } else {
     userConfirmed = true;
   }
 }
 
-// location.href の時点で既に paipu= が見えていれば、その場で即座に自動記録を始める。
+// location.href の時点で既に paipu= が見えていれば、その場で確定させる。
 if (isReplayUrl()) {
-  startRecording({ auto: true });
+  confirmRecording();
 }
 
-// background.js に「リダイレクト前の元URL」を問い合わせ、分かり次第、判定をやり直す。
-// Unityの起動(数秒〜十数秒)に比べてこの問い合わせは十分高速なため、実際のWebSocket通信が
-// 始まるより前に確定するはずである。
+// background.js に「リダイレクト前の元URL」を問い合わせ、分かり次第、判定を確定させる。
+// この問い合わせが返ってくるまでの間も上記の通り暫定記録は既に始まっている。
 chrome.runtime.sendMessage({ type: "MJSOUL_GET_LAST_PAIPU_URL" }, (response) => {
   if (!chrome.runtime.lastError && response && response.url) {
     bestKnownUrl = response.url;
   }
   if (isReplayUrl()) {
-    startRecording({ auto: true });
+    confirmRecording();
   } else if (autoStarted && !userConfirmed) {
-    // 自動開始していたが、実はリプレイ画面ではなかったと判明した場合は破棄する。
-    recording = false;
-    frames = [];
-    autoStarted = false;
+    // 暫定記録していたが、実はリプレイ画面ではなかったと判明した場合は即座に破棄する。
+    discardRecording();
   }
 });
 
@@ -95,6 +115,12 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       return false;
 
     case "MJSOUL_CAPTURE_EXPORT":
+      // 牌譜画面と確定していない(=対局中ページ等の可能性が排除できていない)場合、
+      // ユーザーが手動オーバーライドで確認していない限りエクスポートを拒否する。
+      if (!isReplayUrl() && !userConfirmed) {
+        sendResponse({ ok: false, error: "牌譜(paipu=)を含むリプレイ画面と確認できていないため、エクスポートできません。" });
+        return false;
+      }
       sendResponse({ frames, url: bestKnownUrl });
       return false;
 

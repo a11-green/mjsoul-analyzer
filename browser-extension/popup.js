@@ -75,6 +75,10 @@ clearBtn.addEventListener("click", async () => {
 exportBtn.addEventListener("click", async () => {
   const tab = await getActiveTab();
   const res = await sendToContentScript(tab.id, { type: "MJSOUL_CAPTURE_EXPORT" });
+  if (res && res.ok === false) {
+    alert(res.error);
+    return;
+  }
   if (!res || !res.frames || res.frames.length === 0) {
     alert("キャプチャ済みのフレームがありません。");
     return;
