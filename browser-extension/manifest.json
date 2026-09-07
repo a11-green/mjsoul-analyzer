@@ -3,11 +3,14 @@
   "name": "mjsoul-analyzer 牌譜キャプチャ(非公式・個人利用)",
   "version": "0.1.0",
   "description": "雀魂の牌譜(対局終了後のリプレイ)画面を開いている間、通信内容を手動でキャプチャしJSONとして書き出す補助ツール。対局中は起動できない。",
-  "permissions": ["activeTab", "downloads"],
+  "permissions": ["activeTab", "downloads", "webNavigation"],
   "host_permissions": [
     "https://game.mahjongsoul.com/*",
     "https://mahjongsoul.yo-star.com/*"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "popup.html",
     "default_title": "雀魂牌譜キャプチャ"

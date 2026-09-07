@@ -2,19 +2,27 @@
 // popup.jsからのメッセージに応じて開始/停止/エクスポートを行う。
 // 記録は既定でOFFであり、かつ牌譜(リプレイ)URL以外では開始できない(対局中の使用を防ぐ)。
 //
-// 雀魂クライアントは起動時に "?paipu=..." を読み取った後、アドレスバーのURLを
-// "https://game.mahjongsoul.com/" に書き換えてしまう(履歴書き換え)。
-// 本スクリプトは document_start (クライアントのJSが動く前)で読み込まれるため、
-// この書き換えが起きる前の「最初のURL」を起動時点で保存しておき、以降はそちらを判定に使う。
+// 実際に確認したところ、雀魂は "?paipu=..." のクエリが document_start (ページのJSが
+// 動く前)の時点で既に失われていることがある(サーバー側のリダイレクト等が原因と推測される)。
+// そのため、単に location.href を見るだけでは検出できない。
+// background.js が chrome.webNavigation.onBeforeNavigate で「リダイレクトが起きる前の
+// 最初のリクエストURL」を記録しているので、ここではそれを問い合わせて使う。
 
-const initialUrl = location.href;
+let bestKnownUrl = location.href;
 
 let recording = false;
 let frames = [];
 
 function isReplayUrl() {
-  return initialUrl.includes("paipu=") || location.href.includes("paipu=");
+  return bestKnownUrl.includes("paipu=");
 }
+
+chrome.runtime.sendMessage({ type: "MJSOUL_GET_LAST_PAIPU_URL" }, (response) => {
+  if (chrome.runtime.lastError) return; // background未起動などは無視してlocation.hrefのままにする
+  if (response && response.url) {
+    bestKnownUrl = response.url;
+  }
+});
 
 window.addEventListener("message", (event) => {
   if (event.source !== window) return;
@@ -31,7 +39,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         recording,
         frameCount: frames.length,
         isReplayUrl: isReplayUrl(),
-        url: initialUrl,
+        url: bestKnownUrl,
       });
       return false;
 
@@ -55,7 +63,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       return false;
 
     case "MJSOUL_CAPTURE_EXPORT":
-      sendResponse({ frames, url: initialUrl });
+      sendResponse({ frames, url: bestKnownUrl });
       return false;
 
     default:
