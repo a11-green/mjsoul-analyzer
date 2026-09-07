@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>雀魂牌譜キャプチャ</title>
+<style>
+  body { width: 320px; font-family: sans-serif; font-size: 13px; padding: 10px; }
+  h1 { font-size: 14px; margin: 0 0 8px; }
+  #status { margin-bottom: 8px; white-space: pre-wrap; line-height: 1.5; font-family: monospace; font-size: 11px; }
+  button { margin-right: 4px; margin-bottom: 4px; }
+  .warn { color: #a33; font-size: 11px; margin-top: 8px; line-height: 1.4; }
+  .override { margin-top: 8px; padding-top: 8px; border-top: 1px solid #ccc; }
+  .override label { font-size: 11px; }
+</style>
+</head>
+<body>
+  <h1>雀魂牌譜キャプチャ(非公式・個人利用)</h1>
+  <div id="status">読み込み中...</div>
+  <button id="start">キャプチャ開始(手動/オーバーライド用)</button>
+  <button id="stop">停止</button>
+  <button id="clear">クリア</button>
+  <button id="export">JSONエクスポート</button>
+  <div class="warn">
+    牌譜(リプレイ、URLに paipu= を含む画面)であるとプログラム的に確認できた場合、
+    ページ読み込みと同時に自動でキャプチャが始まります(牌譜取得の通信は起動直後に
+    行われるため、手動でボタンを押すのでは間に合いません)。「キャプチャ開始」ボタンは、
+    自動判定に失敗した場合の手動オーバーライド用です。対局中の使用・自動連続キャプチャは
+    想定していません。取得したJSONは自分自身の振り返り目的以外に使用しないでください。
+  </div>
+  <div class="override">
+    <label>
+      <input type="checkbox" id="forceOverride">
+      自動判定に失敗する場合、今このページは牌譜(リプレイ)画面であると自分で確認した上でキャプチャを許可する
+    </label>
+    <div class="warn">
+      チェックを入れる前に、必ず自分の目でこの画面が対局終了後のリプレイ画面であることを確認してください。
+      対局中の画面では絶対にチェックしないでください。
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
